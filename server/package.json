@@ -19,7 +19,9 @@
   "homepage": "https://github.com/sandeep2194/hmsWithGraphQL#readme",
   "dependencies": {
     "apollo-server": "^3.1.2",
+    "dotenv": "^16.0.1",
     "graphql": "^15.5.1",
+    "mongoose": "^6.3.4",
     "nodemon": "^2.0.16"
   },
   "devDependencies": {

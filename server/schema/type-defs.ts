@@ -64,6 +64,7 @@ export const typeDefs = gql`
         password: String!
     }
 
+    
     input BookingInput {
         checkIn: String!
         checkOut: String!
@@ -74,6 +75,12 @@ export const typeDefs = gql`
         hotel: String!
         source: String!
         status: String!
+    }
+
+    input UpdateBookingInput {
+        id:String!
+        owner: String!
+        payload:Object!
     }
 
     input GuestInput {
@@ -96,6 +103,11 @@ export const typeDefs = gql`
         currency: String!
         owner: String!
     }
+    input UpdateHotelInput {
+        id: String!
+        owner: String!
+        payload: Object!
+    }
 
     input RoomInput {
         name: String!
@@ -115,10 +127,10 @@ export const typeDefs = gql`
         login(input: LoginInput): User
 
         createBooking(input: BookingInput): Booking
-        updateBooking(id: ID!, input: BookingInput): Booking
+        updateBooking(id: ID!, input: UpdateBookingInput): Booking
       
         createHotel(input: HotelInput): Hotel
-        updateHotel(id: ID!, input: HotelInput): Hotel
+        updateHotel(id: ID!, input: UpdateHotelInput): Hotel
       
         createRoom(input: RoomInput): Room
         updateRoom(id: ID!, input: RoomInput): Room

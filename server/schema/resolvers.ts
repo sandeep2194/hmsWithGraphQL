@@ -1,5 +1,6 @@
 import { Booking } from "../models/booking";
 import { Guest } from "../models/guest";
+import { Hotel } from "../models/hotel";
 import { Room } from "../models/room";
 
 const { User } = require('../models/user');
@@ -100,6 +101,7 @@ export const resolvers = {
             }
 
         },
+
         login: async (_: Object, { input: { email, password } }: {
             input: {
                 email: string,
@@ -153,8 +155,74 @@ export const resolvers = {
                 throw new ApolloError('You are not authorized to create a hotel', 'UNAUTHORIZED');
             }
             // cretae hotel model
-
+            const newHotel = new Hotel({
+                name,
+                address,
+                city,
+                state,
+                taxNumber,
+                currency,
+                owner,
+            })
+            // save hotel
+            newHotel.save();
         },
+        updateHotel: async (_: Object, { input: { id, owner, payload } }: {
+            input: {
+                id: string,
+                owner: string,
+                payload: Object
+            }
+        }, { req }: { req: { userId: String } },) => {
+            // check if the owner is same as the logged in user
+            const loggedInUser = req.userId;
+
+            if (loggedInUser !== owner) {
+                throw new ApolloError('You are not authorized to update a hotel', 'UNAUTHORIZED');
+            }
+            // update the hotel
+            await Hotel.updateOne({ _id: id }, { $set: payload });
+        },
+        createBooking: async (_: Object, { input: { hotel, guest, room, checkIn, checkOut, } }: {
+            input: {
+                hotel: string,
+                guest: string,
+                room: string,
+                checkIn: string,
+                checkOut: string
+            }
+        }, { req }: { req: { userId: String } },) => {
+            // check if the owner is same as the logged in user
+            const loggedInUser = req.userId;
+            if (loggedInUser !== hotel) {
+                throw new ApolloError('You are not authorized to create a booking', 'UNAUTHORIZED');
+            }
+            // cretae booking model
+            const newBooking = new Booking({
+                hotel,
+                guest,
+                room,
+                checkIn,
+                checkOut,
+            })
+            // save booking
+            newBooking.save();
+        },
+        updateBooking: async (_: Object, { input: { id, payload, owner } }: {
+            input: {
+                id: string,
+                payload: Object,
+                owner: string
+            }
+        }, { req }: { req: { userId: String } },) => {
+            // check if the owner is same as the logged in user
+            const loggedInUser = req.userId;
+            if (loggedInUser !== owner) {
+                throw new ApolloError('You are not authorized to update a booking', 'UNAUTHORIZED');
+            }
+            // update the booking
+            await Booking.updateOne({ _id: id }, { $set: payload });
+        }
     }
 
 };

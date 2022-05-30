@@ -2,10 +2,8 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const _UserSchema = new Schema({
-    _id: mongoose.ObjectId,
     email: { type: String, unique: true },
     password: String,
-    hotelId: { type: String, default: null },
     token: String,
     username: { type: String, default: null },
     _created_at: Date,

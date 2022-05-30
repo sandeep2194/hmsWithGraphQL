@@ -2,10 +2,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const _HotelSchema = new Schema({
-    _id: String,
     taxNumber: String,
     address: String,
-    admin: String,
+    owner: String,
     name: String,
     city: String,
     currency: String,

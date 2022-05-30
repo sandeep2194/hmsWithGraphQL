@@ -1,3 +1,6 @@
+import { Booking } from "../models/booking";
+import { Guest } from "../models/guest";
+import { Room } from "../models/room";
 
 const { User } = require('../models/user');
 const { ApolloError } = require('apollo-server-errors');
@@ -13,7 +16,38 @@ export const resolvers = {
                 throw new ApolloError('User not found', '404');
             }
             return user;
-        }
+        },
+
+        bookings: async (_: Object, { ID }: { ID: String }) => {
+            const bookings = await Booking.find({ hotel: ID });
+            if (!bookings) {
+                throw new ApolloError('Bookings not found', '404');
+            }
+            return bookings;
+        },
+        hotel: async (_: Object, { ID }: { ID: String }) => {
+            const hotel = await User.findById(ID);
+            if (!hotel) {
+                throw new ApolloError('Hotel not found', '404');
+            }
+            return hotel;
+        },
+
+        rooms: async (_: Object, { ID }: { ID: String }) => {
+            const rooms = await Room.find({ hotel: ID });
+            if (!rooms) {
+                throw new ApolloError('Rooms not found', '404');
+            }
+            return rooms;
+        },
+
+        guest: async (_: Object, { ID }: { ID: String }) => {
+            const guest = await Guest.findById(ID);
+            if (!guest) {
+                throw new ApolloError('Guest not found', '404');
+            }
+            return guest;
+        },
     },
     Mutation: {
         register: async (_: Object, { input: { username, email, password } }: {
@@ -100,7 +134,27 @@ export const resolvers = {
                 throw new ApolloError('Invalid credentials', 'INVALID_CREDENTIALS');
             }
 
-        }
+        },
+
+        createHotel: async (_: Object, { input: { name, address, city, state, taxNumber, currency, owner } }: {
+            input: {
+                name: string,
+                address: string,
+                city: string,
+                state: string,
+                taxNumber: string,
+                currency: string,
+                owner: string
+            }
+        }, { req }: { req: { userId: String } },) => {
+            // check if the owner is same as the logged in user
+            const loggedInUser = req.userId;
+            if (loggedInUser !== owner) {
+                throw new ApolloError('You are not authorized to create a hotel', 'UNAUTHORIZED');
+            }
+            // cretae hotel model
+
+        },
     }
 
 };

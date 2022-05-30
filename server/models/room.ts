@@ -10,4 +10,4 @@ const _RoomSchema = new Schema({
     _updated_at: Date
 }, { versionKey: false, timestamps: true })
 
-export const roomModel = mongoose.model('Rooms', _RoomSchema, 'Rooms');
+export const Room = mongoose.model('Rooms', _RoomSchema, 'Rooms');

@@ -16,4 +16,4 @@ const _GuestSchema = new Schema({
     gender: String,
 }, { versionKey: false, timestamps: true })
 
-export const guestModel = mongoose.model('Guests', _GuestSchema, 'Guests');
+export const Guest = mongoose.model('Guests', _GuestSchema, 'Guests');

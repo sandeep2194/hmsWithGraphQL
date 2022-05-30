@@ -13,4 +13,4 @@ const _HotelSchema = new Schema({
     _updated_at: Date
 }, { versionKey: false, timestamps: true })
 
-export const hotelModel = mongoose.model('Hotels', _HotelSchema, 'Hotels');
+export const Hotel = mongoose.model('Hotels', _HotelSchema, 'Hotels');

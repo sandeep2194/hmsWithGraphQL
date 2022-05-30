@@ -16,4 +16,4 @@ const _BookingSchema = new Schema({
     _updated_at: Date,
 }, { versionKey: false, timestamps: true })
 
-export const bookingModel = mongoose.model('Bookings', _BookingSchema, 'Bookings');
+export const Booking = mongoose.model('Bookings', _BookingSchema, 'Bookings');

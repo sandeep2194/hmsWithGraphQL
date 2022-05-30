@@ -3,11 +3,13 @@ const Schema = mongoose.Schema;
 
 const _UserSchema = new Schema({
     _id: mongoose.ObjectId,
-    email: String,
+    email: { type: String, unique: true },
     password: String,
-    hotelId: [String],
+    hotelId: { type: String, default: null },
+    token: String,
+    username: { type: String, default: null },
     _created_at: Date,
     _updated_at: Date
 }, { versionKey: false, timestamps: true })
 
-export const userModel = mongoose.model('_User', _UserSchema, '_User');
+export const User = mongoose.model('_User', _UserSchema, '_User');

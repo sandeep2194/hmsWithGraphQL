@@ -138,8 +138,9 @@ export const resolvers = {
 
         },
 
-        createHotel: async (_: Object, { input: { name, address, city, state, taxNumber, currency, owner } }: {
+        createHotel: async (_: Object, { input: { _id, name, address, city, state, taxNumber, currency, owner } }: {
             input: {
+                _id: string,
                 name: string,
                 address: string,
                 city: string,
@@ -154,74 +155,183 @@ export const resolvers = {
             if (loggedInUser !== owner) {
                 throw new ApolloError('You are not authorized to create a hotel', 'UNAUTHORIZED');
             }
-            // cretae hotel model
-            const newHotel = new Hotel({
-                name,
-                address,
-                city,
-                state,
-                taxNumber,
-                currency,
-                owner,
-            })
-            // save hotel
-            newHotel.save();
-        },
-        updateHotel: async (_: Object, { input: { id, owner, payload } }: {
-            input: {
-                id: string,
-                owner: string,
-                payload: Object
+            // upsert the hotel
+            if (!_id) {
+                const hotel = new Hotel({
+                    name,
+                    address,
+                    city,
+                    state,
+                    taxNumber,
+                    currency,
+                    owner,
+                });
+                const res = await hotel.save();
+                return {
+                    id: res._id,
+                    ...res._doc,
+                }
+            } else {
+                const hotel = await Hotel.findByIdAndUpdate(_id, {
+                    name,
+                    address,
+                    city,
+                    state,
+                    taxNumber,
+                    currency,
+                    owner,
+                });
+                return {
+                    id: hotel._id,
+                    ...hotel._doc,
+                }
             }
-        }, { req }: { req: { userId: String } },) => {
-            // check if the owner is same as the logged in user
-            const loggedInUser = req.userId;
 
-            if (loggedInUser !== owner) {
-                throw new ApolloError('You are not authorized to update a hotel', 'UNAUTHORIZED');
-            }
-            // update the hotel
-            await Hotel.updateOne({ _id: id }, { $set: payload });
         },
-        createBooking: async (_: Object, { input: { hotel, guest, room, checkIn, checkOut, } }: {
+        createBooking: async (_: Object, { input: { _id, hotel, guest, room, checkIn, checkOut, adults, children, source, status } }: {
             input: {
+                _id: string,
                 hotel: string,
                 guest: string,
                 room: string,
                 checkIn: string,
-                checkOut: string
+                checkOut: string,
+                adults: number,
+                children: number,
+                source: string,
+                status: string,
             }
         }, { req }: { req: { userId: String } },) => {
             // check if the owner is same as the logged in user
             const loggedInUser = req.userId;
-            if (loggedInUser !== hotel) {
+            const hotelOwner = await Hotel.findById(hotel);
+            if (loggedInUser !== hotelOwner.owner) {
                 throw new ApolloError('You are not authorized to create a booking', 'UNAUTHORIZED');
             }
             // cretae booking model
-            const newBooking = new Booking({
-                hotel,
-                guest,
-                room,
-                checkIn,
-                checkOut,
-            })
-            // save booking
-            newBooking.save();
+            if (!_id) {
+                const booking = new Booking({
+                    hotel,
+                    guest,
+                    room,
+                    checkIn,
+                    checkOut,
+
+                    adults,
+                    children,
+                    source,
+                    status,
+                });
+                await booking.save();
+                return { ...booking._doc };
+            } else {
+                const booking = await Booking.findByIdAndUpdate(_id, {
+                    hotel,
+                    guest,
+                    room,
+                    checkIn,
+                    checkOut,
+                    adults,
+                    children,
+                    source,
+                    status,
+                }, {
+                    new: true,
+                    upsert: true
+                });
+                return { ...booking._doc };
+            }
         },
-        updateBooking: async (_: Object, { input: { id, payload, owner } }: {
+        createRoom: async (_: Object, { input: { _id, hotel, name, status, price } }: {
             input: {
-                id: string,
-                payload: Object,
-                owner: string
+                _id: string,
+                hotel: string,
+                name: string,
+                status: string,
+                price: number,
             }
         }, { req }: { req: { userId: String } },) => {
             // check if the owner is same as the logged in user
             const loggedInUser = req.userId;
-            if (loggedInUser !== owner) {
-                throw new ApolloError('You are not authorized to update a booking', 'UNAUTHORIZED');
+            const hotelOwner = await Hotel.findById(hotel);
+            if (loggedInUser !== hotelOwner.owner) {
+                throw new ApolloError('You are not authorized to create a room', 'UNAUTHORIZED');
             }
-            // update the booking
-            await Booking.updateOne({ _id: id }, { $set: payload });
+            // cretae booking model
+            if (!_id) {
+                const room = new Room({
+                    hotel,
+                    name,
+                    status,
+                    price,
+                });
+                await room.save();
+                return { ...room._doc };
+            } else {
+                const room = await Room.findByIdAndUpdate(_id, {
+                    hotel,
+                    name,
+                    status,
+                    price,
+                }, {
+                    new: true,
+                    upsert: true
+                });
+                return { ...room._doc };
+            }
+        },
+        createGuest: async (_: Object, { input: { _id, name, email, phone, address, city, state, country, dob, hotel } }: {
+            input: {
+                _id: string,
+                name: string,
+                email: string,
+                phone: string,
+                address: string,
+                city: string,
+                state: string,
+                country: string,
+                dob: string,
+                hotel: string,
+            }
+        }, { req }: { req: { userId: String } },) => {
+            // check if the owner is same as the logged in user
+            const loggedInUser = req.userId;
+            const hotelOwner = await Hotel.findById(hotel);
+            if (loggedInUser !== hotelOwner.owner) {
+                throw new ApolloError('You are not authorized to create a guest', 'UNAUTHORIZED');
+            }
+            // cretae booking model
+            if (!_id) {
+                const guest = new Guest({
+                    name,
+                    email,
+                    phone,
+                    address,
+                    city,
+                    state,
+                    country,
+                    dob,
+                    hotel,
+                });
+                await guest.save();
+                return { ...guest._doc };
+            } else {
+                const guest = await Guest.findByIdAndUpdate(_id, {
+                    name,
+                    email,
+                    phone,
+                    address,
+                    city,
+                    state,
+                    country,
+                    dob,
+                    hotel,
+                }, {
+                    new: true,
+                    upsert: true
+                });
+                return { ...guest._doc };
+            }
         }
     }
 

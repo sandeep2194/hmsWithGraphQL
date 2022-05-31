@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const _BookingSchema = new Schema({
+    _id: { type: Schema.Types.ObjectId, auto: true },
     checkIn: Date,
     checkOut: Date,
     adults: Number,

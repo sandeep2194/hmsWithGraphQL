@@ -26,6 +26,7 @@ export const typeDefs = gql`
         name: String!
         status: String!
         hotel: Hotel!
+        price: Int!
     }
 
     type Guest{
@@ -38,10 +39,11 @@ export const typeDefs = gql`
         email: String!
         country: String
         state: String
+        address: String
     }
 
     type Booking{
-        _id: ID!
+    _id: ID!
         checkIn: String!
         checkOut: String!
         adults: Int!
@@ -66,53 +68,48 @@ export const typeDefs = gql`
 
     
     input BookingInput {
-        checkIn: String!
-        checkOut: String!
-        adults: Int!
-        children: Int!
-        guests: [String!]!
-        rooms: [String!]!
-        hotel: String!
-        source: String!
-        status: String!
-    }
-
-    input UpdateBookingInput {
-        id:String!
-        owner: String!
-        payload:Object!
+        _id: ID
+        checkIn: String
+        checkOut: String
+        adults: Int
+        children: Int
+        guests: [String!]
+        rooms: [String!]
+        hotel: String
+        source: String
+        status: String
     }
 
     input GuestInput {
+        _id: ID
         name: String!
         phone: String
         city: String
         dob: String
-        hotel: String!
-        email: String!
+        hotel: String
+        email: String
         country: String
         state: String
+        address: String
     }
 
     input HotelInput {
-        name: String!
-        address: String!
-        city: String!
-        state: String!
-        taxNumber: String!
-        currency: String!
-        owner: String!
-    }
-    input UpdateHotelInput {
-        id: String!
-        owner: String!
-        payload: Object!
+        _id: ID
+        name: String
+        address: String
+        city: String
+        state: String
+        taxNumber: String
+        currency: String
+        owner: String
     }
 
     input RoomInput {
-        name: String!
-        status: String!
-        hotel: String!
+        _id: ID
+        name: String
+        status: String
+        hotel: String
+        price: Int
     }
    type Query {
         user(id: ID!): User
@@ -125,18 +122,10 @@ export const typeDefs = gql`
     type Mutation {
         register(input: RegisterInput): User
         login(input: LoginInput): User
-
         createBooking(input: BookingInput): Booking
-        updateBooking(id: ID!, input: UpdateBookingInput): Booking
-      
         createHotel(input: HotelInput): Hotel
-        updateHotel(id: ID!, input: UpdateHotelInput): Hotel
-      
         createRoom(input: RoomInput): Room
-        updateRoom(id: ID!, input: RoomInput): Room
-      
         createGuest(input: GuestInput): Guest
-        updateGuest(id: ID!, input: GuestInput): Guest
     }
 
 `;

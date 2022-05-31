@@ -11,39 +11,66 @@ const jwt = require('jsonwebtoken');
 
 export const resolvers = {
     Query: {
-        user: async (_: Object, { ID }: { ID: String }) => {
-            const user = await User.findById(ID);
+        user: async (_: Object, { id }: { id: String }) => {
+            const user = await User.findById(id);
             if (!user) {
                 throw new ApolloError('User not found', '404');
             }
             return user;
         },
 
-        bookings: async (_: Object, { ID }: { ID: String }) => {
-            const bookings = await Booking.find({ hotel: ID });
+        bookings: async (_: Object, { hotelId }: { hotelId: String },
+            { req }: { req: { userId: String } }
+        ) => {
+            const loggedInUser = req.userId;
+            const hotelOwner = await Hotel.findById(hotelId);
+            if (!hotelOwner || !hotelOwner.owner || loggedInUser !== hotelOwner.owner) {
+                throw new ApolloError('You are not authorized to view the booking list', '401');
+            }
+            const bookings = await Booking.find({ hotel: hotelId });
             if (!bookings) {
                 throw new ApolloError('Bookings not found', '404');
             }
             return bookings;
         },
-        hotel: async (_: Object, { ID }: { ID: String }) => {
-            const hotel = await User.findById(ID);
+        hotel: async (_: Object, { id }: { id: String },
+            { req }: { req: { userId: String } }
+        ) => {
+            const hotel = await Hotel.findById(id);
+            const loggedInUser = req.userId;
+            if (!hotel || !hotel.owner || loggedInUser !== hotel.owner) {
+                throw new ApolloError('You are not authorized to view the hotel', '401');
+            }
             if (!hotel) {
                 throw new ApolloError('Hotel not found', '404');
             }
             return hotel;
         },
 
-        rooms: async (_: Object, { ID }: { ID: String }) => {
-            const rooms = await Room.find({ hotel: ID });
+        rooms: async (_: Object, { id }: { id: String },
+            { req }: { req: { userId: String } }
+        ) => {
+            const hotel = await Hotel.findById(id);
+            const loggedInUser = req.userId;
+            if (!hotel || !hotel.owner || loggedInUser !== hotel.owner) {
+                throw new ApolloError('You are not authorized to view the rooms', '401');
+            }
+            const rooms = await Room.find({ hotel: id });
             if (!rooms) {
                 throw new ApolloError('Rooms not found', '404');
             }
             return rooms;
         },
 
-        guest: async (_: Object, { ID }: { ID: String }) => {
-            const guest = await Guest.findById(ID);
+        guest: async (_: Object, { email }: { email: String },
+            { req }: { req: { userId: String } }
+        ) => {
+            const guest = await Guest.findOne({ email });
+            const loggedInUser = req.userId;
+            const hotel = await Hotel.findById(guest.hotel);
+            if (!hotel || !hotel.owner || loggedInUser !== hotel.owner) {
+                throw new ApolloError('You are not authorized to view the guest', '401');
+            }
             if (!guest) {
                 throw new ApolloError('Guest not found', '404');
             }

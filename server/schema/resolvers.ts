@@ -142,6 +142,7 @@ export const resolvers = {
             }
         }) => {
             // see if user exists
+            console.log("in login resolver");
             const user = await User.findOne({ email });
 
             // check if password is correct

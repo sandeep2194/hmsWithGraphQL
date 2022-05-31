@@ -11,7 +11,13 @@ const jwt = require('jsonwebtoken');
 
 export const resolvers = {
     Query: {
-        user: async (_: Object, { id }: { id: String }) => {
+        user: async (_: Object, { id }: { id: String },
+            { req }: { req: { userId: String } }
+        ) => {
+            const loggedInUser = req.userId;
+            if (loggedInUser !== id) {
+                throw new ApolloError('You are not authorized to view this user');
+            }
             const user = await User.findById(id);
             if (!user) {
                 throw new ApolloError('User not found', '404');
@@ -47,15 +53,15 @@ export const resolvers = {
             return hotel;
         },
 
-        rooms: async (_: Object, { id }: { id: String },
+        rooms: async (_: Object, { hotelId }: { hotelId: String },
             { req }: { req: { userId: String } }
         ) => {
-            const hotel = await Hotel.findById(id);
+            const hotel = await Hotel.findById(hotelId);
             const loggedInUser = req.userId;
             if (!hotel || !hotel.owner || loggedInUser !== hotel.owner) {
                 throw new ApolloError('You are not authorized to view the rooms', '401');
             }
-            const rooms = await Room.find({ hotel: id });
+            const rooms = await Room.find({ hotel: hotelId });
             if (!rooms) {
                 throw new ApolloError('Rooms not found', '404');
             }

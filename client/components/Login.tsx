@@ -1,36 +1,160 @@
 import { View, TextInput, Button, Text, TouchableOpacity } from "react-native"
 import React from "react"
 import { gql, useMutation } from "@apollo/client"
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LOGIN_MUTATION = gql`
-    mutation LoginMutation($email: String!, $password: String!) {
-        login(email: $email, password: $password) {   
-            token
-            user {
-                _id
-                username
-                email
-            }
-        }
-    }
+    mutation Mutation($input: LoginInput) {
+    login(input: $input) {
+        token,
+        _id,
+        email,
+        username,
+  }
+}
 `
 const Login = () => {
+    const [showRegister, setShowRegister] = React.useState(false)
+
+
+    const saveUser = async (user: {
+        token: string,
+        _id: string,
+        email: string,
+        username: string,
+    }) => {
+        try {
+            await AsyncStorage.setItem('user', JSON.stringify(user))
+        } catch (e) {
+            console.log(e)
+        }
+    }
+    return (
+        <View
+            style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+            }}
+        >
+            {showRegister ? <RegisterForm saveUser={saveUser} /> : <LoginForm saveUser={saveUser} showRegister={() => setShowRegister(true)} />}
+        </View>
+    )
+}
+
+const REGISTER_MUTATION = gql`
+  mutation Register($input: RegisterInput) {
+  register(input: $input) {
+    _id
+    username
+    token
+    email
+  }
+}
+`;
+const RegisterForm = ({ saveUser }: { saveUser: Function }) => {
+    const [username, setUsername] = React.useState("")
+    const [email, setEmail] = React.useState("")
+    const [password, setPassword] = React.useState("")
+    const [passwordConfirm, setPasswordConfirm] = React.useState("")
+    const [register, { data, error }] = useMutation(REGISTER_MUTATION, {
+        variables: {
+            input: {
+                email,
+                password,
+                username,
+            },
+        },
+    })
+    data && saveUser(data.register)
+    return (
+        <View
+            style={{
+                flex: 1,
+                alignItems: "center",
+                width: "80%",
+            }}
+        >
+            <Text>Register</Text>
+            <TextInput
+                placeholder="Username"
+                onChangeText={(text) => setUsername(text)}
+                value={username}
+                style={{
+                    borderWidth: 1,
+                    borderColor: "black",
+                    padding: 10,
+                    margin: 10,
+                    width: "100%"
+                }}
+
+            />
+            <TextInput
+
+                placeholder="Email"
+                onChangeText={(text) => setEmail(text)}
+                value={email}
+                style={{
+                    borderWidth: 1,
+                    borderColor: "black",
+                    padding: 10,
+                    margin: 10,
+                    width: "100%"
+                }}
+            />
+            <TextInput
+                placeholder="Password"
+                onChangeText={(text) => setPassword(text)}
+                value={password}
+                style={{
+                    borderWidth: 1,
+                    borderColor: "black",
+                    padding: 10,
+                    margin: 10,
+                    width: "100%"
+                }}
+            />
+            <TextInput
+
+                placeholder="Confirm Password"
+                onChangeText={(text) => setPasswordConfirm(text)}
+                value={passwordConfirm}
+                style={{
+                    borderWidth: 1,
+                    borderColor: "black",
+                    padding: 10,
+                    margin: 10,
+                    width: "100%"
+                }}
+            />
+            <Button
+                title="Register"
+                onPress={() => {
+                    register()
+                }}
+            />
+        </View>
+    )
+}
+
+
+const LoginForm = ({ saveUser, showRegister }: { saveUser: Function, showRegister: Function }) => {
     const [email, setEmail] = React.useState("")
     const [password, setPassword] = React.useState("")
     const [login, { data, error }] = useMutation(LOGIN_MUTATION)
-
     const handleLogin = () => {
         login({
             variables: {
-                email,
-                password,
+                input: {
+                    email,
+                    password,
+                }
             },
         })
     }
-
     error && console.log(error)
-    data && console.log(data)
-
+    data && saveUser(data.login)
     return (
         <View
             style={{
@@ -73,7 +197,7 @@ const Login = () => {
                     alignItems: "center",
                 }}
                 onPress={() => {
-                    console.log("Register")
+                    showRegister()
                 }}
             >
                 <Text>Register</Text>
@@ -83,5 +207,6 @@ const Login = () => {
 
     )
 }
+
 
 export default Login

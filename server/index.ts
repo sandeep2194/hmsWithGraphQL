@@ -34,8 +34,8 @@ async function startApolloServer(typeDefs: TypeDefinitionNode, resolvers: Object
     });
     server.applyMiddleware({ app, path: '/graphql' });
 
-    app.listen(4000, () => {
-        console.log(`Server is listening on port ${4000}${server.graphqlPath}`);
+    app.listen(5000, () => {
+        console.log(`Server is listening on port ${5000}${server.graphqlPath}`);
     })
 }
 

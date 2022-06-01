@@ -1,6 +1,6 @@
 import { View, TextInput, Button, Text, TouchableOpacity } from "react-native"
 import React from "react"
-import { gql, useMutation } from "@apollo/client"
+import { gql, useMutation, useQuery } from "@apollo/client"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LOGIN_MUTATION = gql`
@@ -15,8 +15,6 @@ const LOGIN_MUTATION = gql`
 `
 const Login = () => {
     const [showRegister, setShowRegister] = React.useState(false)
-
-
     const saveUser = async (user: {
         token: string,
         _id: string,
@@ -39,9 +37,41 @@ const Login = () => {
             }}
         >
             {showRegister ? <RegisterForm saveUser={saveUser} /> : <LoginForm saveUser={saveUser} showRegister={() => setShowRegister(true)} />}
+
+            <Bookings hotelId="62956e11771f4c6cf9af0894" />
         </View>
     )
 }
+
+const QUERY_ALL_BOOKINGS = gql`
+    query Bookings($hotelId: ID!) {
+    bookings(hotelId: $hotelId) {
+    _id
+    checkIn
+    adults
+  }
+}
+`
+
+const Bookings = ({ hotelId }: { hotelId: String }) => {
+    const { data, loading, error } = useQuery(QUERY_ALL_BOOKINGS, {
+        variables: { hotelId },
+    })
+    console.log(data)
+    console.log(loading)
+    error && console.log(error.message)
+    return (
+        <View>
+            {data && data.bookings.map((booking: { _id: String, checkIn: String, adults: Number }) => (
+                <View key={booking._id.toString()}>
+                    <Text >{booking.checkIn}</Text>
+                    <Text >{booking.adults.toString()}</Text>
+
+                </View>
+            ))}
+        </View>
+    );
+};
 
 const REGISTER_MUTATION = gql`
   mutation Register($input: RegisterInput) {
